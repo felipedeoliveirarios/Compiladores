@@ -6,33 +6,30 @@ EOF = ""
 
 
 #estado, final?, classe
-lista_de_estados = []
-lista_de_estados = [["S0", False, None],
-					["S0_B", True, None],
-					["S1", True, "Num"],
-					["S2", False, None],
-					["S3", True, "Num"],
-					["S4", False, None],
-					["S5", False, None ],
-					["S6", True, "Num"],
-					["S7", False, None],
-					["S8", True, "Literal"],
-					["S9", True, "id"],
-					["S10", False, None],
-					["S11", True, None],
-					["S12", True, "EOF"],
-					["S13_A", True, "OPR"],
-					["S13_B", True, "OPR"],
-					["S13_C",True , "OPR"],
-					["S14", True, "RCB"],
-					["S15", True, "OPM"],
-					["S16", True, "AB_P"],
-					["S17", True, "FC_P"],
-					["S18", True, "PT_V"],
-					["S19", True, "Vir"],
-					["S20", True, "ERRO"]]
-
-classe_de_lexemas = ["Num", "Literal", "id", "Comentário", "EOF", "OPR", "RCB", "OPM", "AB_P", "FC_P", "PT_V", "ERRO", "Vir", "\s"]
+lista_de_estados = {"S0" 	: [False, None],
+					"S0_B"	: [True, None],
+					"S1" 	: [True, "Num"],
+					"S2" 	: [False, None],
+					"S3" 	: [True, "Num"],
+					"S4" 	: [False, None],
+					"S5" 	: [False, None ],
+					"S6" 	: [True, "Num"],
+					"S7" 	: [False, None],
+					"S8" 	: [True, "Literal"],
+					"S9" 	: [True, "id"],
+					"S10" 	: [False, None],
+					"S11" 	: [True, None],
+					"S12" 	: [True, "EOF"],
+					"S13_A" : [True, "OPR"],
+					"S13_B" : [True, "OPR"],
+					"S13_C" : [True , "OPR"],
+					"S14" 	: [True, "RCB"],
+					"S15" 	: [True, "OPM"],
+					"S16" 	: [True, "AB_P"],
+					"S17" 	: [True, "FC_P"],
+					"S18" 	: [True, "PT_V"],
+					"S19" 	: [True, "Vir"],
+					"S20" 	: [True, "ERRO"]}
 
 #(incial, destino, entrada)
 tabela_de_transição = [
