@@ -6,6 +6,7 @@ EOF = ""
 
 
 #estado, final?, classe
+lista_de_estados = []
 lista_de_estados = [["S0", False, None],
 					["S0_B", True, None],
 					["S1", True, "Num"],

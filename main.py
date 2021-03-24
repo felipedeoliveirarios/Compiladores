@@ -1,3 +1,5 @@
+import constantes
+
 class Token:
   	classe, lexema, tipo = None, None, None
 
@@ -22,10 +24,26 @@ tabela_de_simbolos = [Token("inicio", "inicio", None),
                       Token("real", "real", None)]
 
 
+class Scanner:
+	estado = None
+	lexema = None
+	
+	def Scanner(entrada):
+		if estado is None:
+			estado = "S0"
+			lexema = ""
+		erro = True
+		for transicao in constantes.tabela_de_transição:
+			if transicao[0] == estado:
+				if entrada in transicao[2]:
+					estado = transicao[1]
+					lexema += entrada
+					erro = False
+					break
+		
+		if erro:
+			
+		
+		
 
-def Scanner():
-	pass
-
-
-
-
+	
