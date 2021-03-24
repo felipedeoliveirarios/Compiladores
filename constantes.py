@@ -3,10 +3,12 @@ LETRAS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuwxyz"
 COMENTARIO = NUMEROS + LETRAS + "!\"#\\$%&'()*+,-./:;<=>?@[]^/_`/|~"
 STRING = NUMEROS + LETRAS + "!#$%&'()*+,-./\\:;<=>?@[]^/_`/{|}~"
 EOF = ""
+ESPACO_VAZIO = """ 	
+"""
 
 
 #estado, final?, classe
-lista_de_estados = {"S0" 	: [False, None],
+lista_de_estados = {"S0_A" 	: [False, None],
 					"S0_B"	: [True, None],
 					"S1" 	: [True, "Num"],
 					"S2" 	: [False, None],
@@ -33,10 +35,10 @@ lista_de_estados = {"S0" 	: [False, None],
 
 #(incial, destino, entrada)
 tabela_de_transição = [
-					   ["S0", "S0_B", " \t\n"],
-					   ["S0_B", "S0_B", " \t\n"],
+					   ["S0_A", "S0_B", ESPACO_VAZIO],
+					   ["S0_B", "S0_B", ESPACO_VAZIO],
 					   #Num
-					   ["S0", "S1", NUMEROS],
+					   ["S0_A", "S1", NUMEROS],
 					   ["S1", "S1", NUMEROS],
 					   ["S1", "S2", "."],
 					   ["S1", "S4", "Ee"],
@@ -48,33 +50,33 @@ tabela_de_transição = [
 					   ["S5", "S6", NUMEROS],
 					   ["S6", "S6", NUMEROS],
 					   #Literal
-					   ["S0", "S7", "\""],
+					   ["S0_A", "S7", "\""],
 					   ["S7", "S7", STRING],
 					   ["S7", "S8", "\""],
 					   #id
-					   ["S0", "S9", LETRAS],
+					   ["S0_A", "S9", LETRAS],
 					   ["S9", "S9", LETRAS + NUMEROS + "_"],
 					   #Comentário
-					   ["S0", "S10", "{"],
+					   ["S0_A", "S10", "{"],
 					   ["S10", "S10", COMENTARIO],
 					   ["S10", "S11", "}"],
 					   #EOF
-					   ["S0", "S12", EOF],
+					   ["S0_A", "S12", EOF],
 					   #OPR
-					   ["S0", "S13_A", ">"],
-					   ["S0", "S13_B", "<"],
-					   ["S0", "S13_C", "="],
+					   ["S0_A", "S13_A", ">"],
+					   ["S0_A", "S13_B", "<"],
+					   ["S0_A", "S13_C", "="],
 					   ["S13_A", "S13_C", "="],
 					   ["S13_B", "S13_C", "="],
 					   #RCB
 					   ["S13_B", "S14", "-"],
 					   #OPM
-					   ["S0", "S15", "+-*/"],
+					   ["S0_A", "S15", "+-*/"],
 					   #AB_P
-					   ["S0", "S16", "("],
+					   ["S0_A", "S16", "("],
 					   #FC_P
-					   ["S0", "S17", ")"],
+					   ["S0_A", "S17", ")"],
 					   #PT_V
-					   ["S0", "S18", ";"],
+					   ["S0_A", "S18", ";"],
 					   #Vir
-					   ["S0", "S19", ","]]
+					   ["S0_A", "S19", ","]]
