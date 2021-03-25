@@ -1,5 +1,5 @@
 NUMEROS = "1234567890"
-LETRAS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuwxyz"
+LETRAS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 COMENTARIO = NUMEROS + LETRAS + "!\"#\\$%&'()*+,-./:;<=>?@[]^/_`/|~"
 STRING = NUMEROS + LETRAS + "!#$%&'()*+,-./\\:;<=>?@[]^/_`/{|}~"
 EOF = ""
@@ -9,7 +9,7 @@ ESPACO_VAZIO = """
 
 #estado, final?, classe
 lista_de_estados = {"S0_A" 	: [False, None],
-					"S0_B"	: [True, None],
+					"S0_B"	: [True, "\s"],
 					"S1" 	: [True, "Num"],
 					"S2" 	: [False, None],
 					"S3" 	: [True, "Num"],
