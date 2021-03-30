@@ -6,77 +6,197 @@ EOF = ""
 ESPACO_VAZIO = """ 	
 """
 
+class Estado:
+	token = None
+	regras_de_transicao = None
+	final = None
 
-#estado, final?, classe
-lista_de_estados = {"S0_A" 	: [False, None],
-					"S0_B"	: [True, "\s"],
-					"S1" 	: [True, "Num"],
-					"S2" 	: [False, None],
-					"S3" 	: [True, "Num"],
-					"S4" 	: [False, None],
-					"S5" 	: [False, None ],
-					"S6" 	: [True, "Num"],
-					"S7" 	: [False, None],
-					"S8" 	: [True, "Literal"],
-					"S9" 	: [True, "id"],
-					"S10" 	: [False, None],
-					"S11" 	: [True, None],
-					"S12" 	: [True, "EOF"],
-					"S13_A" : [True, "OPR"],
-					"S13_B" : [True, "OPR"],
-					"S13_C" : [True , "OPR"],
-					"S14" 	: [True, "RCB"],
-					"S15" 	: [True, "OPM"],
-					"S16" 	: [True, "AB_P"],
-					"S17" 	: [True, "FC_P"],
-					"S18" 	: [True, "PT_V"],
-					"S19" 	: [True, "Vir"],
-					"S20" 	: [True, "ERRO"]}
+	def __init__(self, regras_de_transicao, token, final):
+		self.regras_de_transicao = regras_de_transicao
+		self.final = final
+		self.token = token
 
-#(incial, destino, entrada)
-tabela_de_transição = [
-					   ["S0_A", "S0_B", ESPACO_VAZIO],
-					   ["S0_B", "S0_B", ESPACO_VAZIO],
-					   #Num
-					   ["S0_A", "S1", NUMEROS],
-					   ["S1", "S1", NUMEROS],
-					   ["S1", "S2", "."],
-					   ["S1", "S4", "Ee"],
-					   ["S2", "S3", NUMEROS],
-					   ["S3", "S3", NUMEROS],
-					   ["S3", "S4", "Ee"],
-					   ["S4", "S5", "-+"],
-					   ["S4", "S6", NUMEROS],
-					   ["S5", "S6", NUMEROS],
-					   ["S6", "S6", NUMEROS],
-					   #Literal
-					   ["S0_A", "S7", "\""],
-					   ["S7", "S7", STRING],
-					   ["S7", "S8", "\""],
-					   #id
-					   ["S0_A", "S9", LETRAS],
-					   ["S9", "S9", LETRAS + NUMEROS + "_"],
-					   #Comentário
-					   ["S0_A", "S10", "{"],
-					   ["S10", "S10", COMENTARIO],
-					   ["S10", "S11", "}"],
-					   #EOF
-					   ["S0_A", "S12", EOF],
-					   #OPR
-					   ["S0_A", "S13_A", ">"],
-					   ["S0_A", "S13_B", "<"],
-					   ["S0_A", "S13_C", "="],
-					   ["S13_A", "S13_C", "="],
-					   ["S13_B", "S13_C", "="],
-					   #RCB
-					   ["S13_B", "S14", "-"],
-					   #OPM
-					   ["S0_A", "S15", "+-*/"],
-					   #AB_P
-					   ["S0_A", "S16", "("],
-					   #FC_P
-					   ["S0_A", "S17", ")"],
-					   #PT_V
-					   ["S0_A", "S18", ";"],
-					   #Vir
-					   ["S0_A", "S19", ","]]
+	def busca_transicao(self, entrada):
+		
+		chave = None
+
+		for item in self.regras_de_transicao.items():
+			if entrada in item[1]:
+				chave = item[0]
+				break
+		
+		return chave
+
+
+lista_de_estados = {}
+lista_de_estados["S0_A"] = Estado(
+								{
+									"S0_B" 	: ESPACO_VAZIO,
+								 	"S1" 	: NUMEROS,
+									"S7" 	: "\"",
+									"S9"	: LETRAS,
+									"S10"	: "{",
+									"S12"	: EOF,
+									"S13_A"	: ">",
+									"S13_B"	: "<",
+					   				"S13_C"	: "=",
+									"S15"	: "+-*/",
+									"S16"	: "(",
+									"S17"	: ")",
+					   				"S18"	: ";",
+					   				"S19"	: ","
+								},
+								None,
+								False
+								)
+
+lista_de_estados["S0_B"] = Estado(
+								{
+									"S0_B" : ESPACO_VAZIO,
+								},
+								"\s",
+								True)
+
+lista_de_estados["S1"] = Estado(
+								{
+								"S1"	: NUMEROS,
+					   			"S2"	: ".",
+					   			"S4"	: "Ee"
+								},
+								"Num",
+								True)
+
+lista_de_estados["S2"] = Estado(
+								{
+								"S3" 	: NUMEROS
+								},
+								None,
+								False)
+
+lista_de_estados["S3"] = Estado(
+								{
+								"S3"	: NUMEROS,
+					   			"S4"	: "Ee"
+								},
+								"Num",
+								True)
+
+lista_de_estados["S4"] = Estado(
+								{
+								"S5"	: "-+",
+					   			"S6"	: NUMEROS
+								},
+								None,
+								False)
+
+lista_de_estados["S5"] = Estado(
+								{
+								"S6"	: NUMEROS
+								},
+								None,
+								False)
+
+lista_de_estados["S6"] = Estado(
+								{
+								"S6"	: NUMEROS
+								},
+								"Num",
+								True)
+
+lista_de_estados["S7"] = Estado(
+								{
+								"S7"	: STRING,
+					   			"S8"	: "\""
+								},
+								None,
+								False)
+
+lista_de_estados["S8"] = Estado(
+								{},
+								"Literal",
+								True)
+
+lista_de_estados["S9"] = Estado(
+								{
+								"S9"	: LETRAS + NUMEROS + "_"
+								},
+								"id",
+								True)
+
+lista_de_estados["S10"] = Estado(
+								{
+								"S10"	: COMENTARIO,
+					   			"S11"	: "}"
+								},
+								None,
+								False)
+
+lista_de_estados["S11"] = Estado(
+								{
+
+								},
+								None,
+								True)
+
+lista_de_estados["S12"] = Estado(
+								{
+
+								},
+								"EOF",
+								True)
+
+lista_de_estados["S13_A"] = Estado(
+								{
+								"S13_C"	: "="
+								},
+								"OPR",
+								True)
+
+lista_de_estados["S13_B"] = Estado(
+								{
+								"S13_C"	: "=",
+					   			"S14"	: "-"
+								},
+								"OPR",
+								True)
+
+lista_de_estados["S13_C"] = Estado(
+								{},
+								"OPR",
+								True)
+
+lista_de_estados["S14"] = Estado(
+								{},
+								"RCB",
+								True)
+
+lista_de_estados["S15"] = Estado(
+								{},
+								"OPM",
+								True)
+
+lista_de_estados["S16"] = Estado(
+								{},
+								"AB_P",
+								True)
+
+lista_de_estados["S17"] = Estado(
+								{},
+								"FC_P",
+								True)
+
+lista_de_estados["S18"] = Estado(
+								{},
+								"PT_V",
+								True)
+
+lista_de_estados["S19"] = Estado(
+								{},
+								"Vir",
+								True)
+
+lista_de_estados["S20"] = Estado(
+								{},
+								"ERRO",
+								True)
+
