@@ -37,6 +37,8 @@ class Scanner:
 	estado = None
 	buffer = None
 	indice = None
+	linha = 0
+	coluna = 0
 
 	def __init__(self):
 		self.estado = constantes.lista_de_estados["S0_A"]
@@ -59,8 +61,14 @@ class Scanner:
 			return Token("EOF", "EOF", None)
 
 		while True:
-			
 			proximo_estado = self.estado.busca_transicao(self.buffer[self.indice])
+
+			if self.buffer[self.indice] == "\n":
+				self.linha += 1
+				self.coluna = 0
+			else:
+				self.coluna += 1
+
 
 			if proximo_estado is None:
 				break
@@ -96,14 +104,31 @@ class Scanner:
 				return Token(classe, lexema, None)
 		else:
 			lexema = self.buffer[0:self.indice]
-
+			
 			classe = "ERRO"
+
+			if self.estado == constantes.lista_de_estados["S0_A"]:
+				classe = "ERRO1"
+			else:
+				classe = "ERRO2"
+			
 
 			self.buffer = self.buffer[self.indice:]
 
 			self.Reset()
 
-			return Token(classe, (self.indice, lexema), None)
+			return Token(classe, self.indice, None)
+
+def Error(classe, linha, coluna):
+	mensagem = ""
+
+	if classe == "ERRO1":
+		mensagem = "Caracter não reconhecido pela linguagem."
+	else:
+		mensagem = "Caracter não esperado."
+	
+	print("{} - {}, linha {} e coluna {}".format(classe, mensagem, linha, coluna))
+
 
 def main(arquivo):
 	#printar o Token ou exibir o erro
@@ -119,8 +144,8 @@ def main(arquivo):
 
 			token_retornado = scanner.Scanner()
 
-			if(token_retornado.classe == "ERRO"):
-				print("Classe: \"{}\", Lexema: \"{}\", Tipo: \"{}\"".format(token_retornado.classe, token_retornado.lexema, token_retornado.tipo))
+			if "ERRO" in token_retornado.classe:
+				Error(token_retornado.classe, scanner.linha, scanner.coluna)
 			else:
 				if token_retornado.classe != "EOF":
 					print("Classe: \"{}\", Lexema: \"{}\", Tipo: \"{}\"".format(token_retornado.classe, token_retornado.lexema, token_retornado.tipo))
