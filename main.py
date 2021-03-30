@@ -83,15 +83,20 @@ def main(arquivo):
 	
 	with open(arquivo) as fonte:
 		scanner = Scanner()
+		token_retornado = Token("","",None)
+
 
 		while token_retornado.classe != "EOF":
-			token_retornado = scanner.Scanner(fonte.read(1))
+			scanner.Alimentar(fonte.read())
 
-			if(token_retornado.classe == "ERRO"):
-				print("Classe: \"{}\", Lexema: \"{}\", Tipo: \"{}\"".format(token_retornado.classe, token_retornado.lexema, token_retornado.tipo))
-			else:
-				if token_retornado.classe != "EOF":
+			while token_retornado is not None:
+				token_retornado = scanner.Scanner()
+
+				if(token_retornado.classe == "ERRO"):
 					print("Classe: \"{}\", Lexema: \"{}\", Tipo: \"{}\"".format(token_retornado.classe, token_retornado.lexema, token_retornado.tipo))
+				else:
+					if token_retornado.classe != "EOF":
+						print("Classe: \"{}\", Lexema: \"{}\", Tipo: \"{}\"".format(token_retornado.classe, token_retornado.lexema, token_retornado.tipo))
 	
 	tabela = BeautifulTable()
 	tabela.columns.header = ["Classe", "Lexema", "Tipo"]
