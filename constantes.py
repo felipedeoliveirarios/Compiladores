@@ -1,10 +1,10 @@
 NUMEROS = "1234567890"
 LETRAS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 COMENTARIO = NUMEROS + LETRAS + "!\"#\\$%&'()*+,-./:;<=>?@[]^/_`/|~"
-STRING = NUMEROS + LETRAS + "!#$%&'()*+,-./\\:;<=>?@[]^/_`/{|}~"
 EOF = ""
 ESPACO_VAZIO = """ 	
 """
+STRING = NUMEROS + LETRAS + "!#$%&'()*+,-./\\:;<=>?@[]^/_`/{|}~" + ESPACO_VAZIO
 
 class Estado:
 	token = None

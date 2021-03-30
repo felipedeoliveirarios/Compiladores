@@ -1,7 +1,7 @@
 import constantes
 from beautifultable import BeautifulTable
 
-DEBUG = True
+DEBUG = False
 
 # Classe responsável por armazenar os dados de um token
 class Token:
@@ -44,9 +44,19 @@ class Scanner:
 
 	def Alimentar(self, entrada):
 		self.buffer = entrada
+	
+	def Reset(self):
+		self.estado = constantes.lista_de_estados["S0_A"]
+		self.indice = 0
+		
+		if DEBUG:
+			print("RESETAMOS PARA O ESTADO INICIAL. TAMANHO DO BUFFER: {}".format(len(self.buffer)))
 
 	# Função principal do scanner.
 	def Scanner(self):
+		
+		if self.buffer == "":
+			return Token("EOF", "EOF", None)
 
 		while True:
 			
@@ -55,27 +65,45 @@ class Scanner:
 			if proximo_estado is None:
 				break
 
+			if DEBUG:
+				print("INDICE: {}; TAMANHO DO BUFFER: {}".format(self.indice,len(self.buffer)))
+			
 			self.estado = constantes.lista_de_estados[proximo_estado]			
 			self.indice += 1
+
+			if self.indice == len(self.buffer):
+				break
 		
+		if DEBUG:
+			print("REMOVENDO DO BUFFER: \"{}\"".format(self.buffer[0:self.indice]))
+
 		if self.estado.final:
 			lexema = self.buffer[0:self.indice]
 			classe = self.estado.token
 
 			if classe == "id":
-				if HasKey(lexema):
-					self.buffer = self.buffer[self.indice:]
-				else:
+				if not HasKey(lexema):
 					tabela_de_simbolos[lexema] = Token(classe, lexema, None)
 				
+				self.buffer = self.buffer[self.indice:]
+				self.Reset()
+
 				return tabela_de_simbolos[lexema]
 			else:
+				self.buffer = self.buffer[self.indice:]
+				self.Reset()
+
 				return Token(classe, lexema, None)
 		else:
 			lexema = self.buffer[0:self.indice]
+
 			classe = "ERRO"
-			
-			return Token(lexema, (classe, self.indice), None)
+
+			self.buffer = self.buffer[self.indice:]
+
+			self.Reset()
+
+			return Token(classe, (self.indice, lexema), None)
 
 def main(arquivo):
 	#printar o Token ou exibir o erro
@@ -85,18 +113,17 @@ def main(arquivo):
 		scanner = Scanner()
 		token_retornado = Token("","",None)
 
+		scanner.Alimentar(fonte.read())
 
 		while token_retornado.classe != "EOF":
-			scanner.Alimentar(fonte.read())
 
-			while token_retornado is not None:
-				token_retornado = scanner.Scanner()
+			token_retornado = scanner.Scanner()
 
-				if(token_retornado.classe == "ERRO"):
+			if(token_retornado.classe == "ERRO"):
+				print("Classe: \"{}\", Lexema: \"{}\", Tipo: \"{}\"".format(token_retornado.classe, token_retornado.lexema, token_retornado.tipo))
+			else:
+				if token_retornado.classe != "EOF":
 					print("Classe: \"{}\", Lexema: \"{}\", Tipo: \"{}\"".format(token_retornado.classe, token_retornado.lexema, token_retornado.tipo))
-				else:
-					if token_retornado.classe != "EOF":
-						print("Classe: \"{}\", Lexema: \"{}\", Tipo: \"{}\"".format(token_retornado.classe, token_retornado.lexema, token_retornado.tipo))
 	
 	tabela = BeautifulTable()
 	tabela.columns.header = ["Classe", "Lexema", "Tipo"]
