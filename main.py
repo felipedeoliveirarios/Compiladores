@@ -1,6 +1,8 @@
 import constantes
 from beautifultable import BeautifulTable
 
+import argparse
+
 DEBUG = False
 
 # Classe responsável por armazenar os dados de um token
@@ -112,7 +114,7 @@ class Scanner:
 			else:
 				classe = "ERRO2"
 			
-
+			self.indice += 1
 			self.buffer = self.buffer[self.indice:]
 
 			self.Reset()
@@ -145,17 +147,22 @@ def main(arquivo):
 			token_retornado = scanner.Scanner()
 
 			if "ERRO" in token_retornado.classe:
-				Error(token_retornado.classe, scanner.linha, scanner.coluna)
+				Error(token_retornado.classe, scanner.linha, scanner.coluna - 1)
 			else:
-				if token_retornado.classe != "EOF":
+				if token_retornado.classe is not None and token_retornado.classe != "EOF" and token_retornado.classe != "\s":
 					print("Classe: \"{}\", Lexema: \"{}\", Tipo: \"{}\"".format(token_retornado.classe, token_retornado.lexema, token_retornado.tipo))
 	
-	tabela = BeautifulTable()
-	tabela.columns.header = ["Classe", "Lexema", "Tipo"]
-	for chave in tabela_de_simbolos.keys():
-		token = tabela_de_simbolos[chave]
-		tabela.rows.append([token.classe, token.lexema, token.tipo]) 
-	print(tabela)
+	if DEBUG:
+		tabela = BeautifulTable()
+		tabela.columns.header = ["Classe", "Lexema", "Tipo"]
+		for chave in tabela_de_simbolos.keys():
+			token = tabela_de_simbolos[chave]
+			tabela.rows.append([token.classe, token.lexema, token.tipo]) 
+		print(tabela)
 
 if __name__ == "__main__":
-	main("fonte.alg")
+	
+	parser = argparse.ArgumentParser()
+	parser.add_argument("fonte", help = "Caminho do arquivo de entrada")
+	args = parser.parse_args()
+	main(args.fonte)
