@@ -1,0 +1,15 @@
+Descrição dos algoritmos:
+
+Scanner (Entrada: string; Saída: Token):
+	1. Confere se a entrada é vazia.
+		1.1. Caso seja, reinicia a máquina de estados e retorna um Token EOF.
+
+	2. Confere se existe uma transição válida para a entrada dada, à partir do estado atual da máquina.
+		2.1. Se houver, realiza a transição, adiciona a entrada ao lexema atual, vira a flag de transição e atualiza retorna o token.
+	
+	3. Se uma transição não tiver sido realizada...
+		3.1. Se o estado atual for final, reinicia a máquina de estados e refaz a chamada do Scanner para S.
+		3.2. Se o estado atual não for final, então a execução encontrou um erro.
+			3.2.1. A entrada será adicionada ao lexema, e o token será retornado com classe de erro.
+		
+

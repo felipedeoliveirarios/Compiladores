@@ -1,7 +1,7 @@
 import constantes
 from beautifultable import BeautifulTable
 
-DEBUG = False
+DEBUG = True
 
 # Classe responsável por armazenar os dados de um token
 class Token:
@@ -32,10 +32,6 @@ tabela_de_simbolos = {"inicio": Token("inicio", "inicio", None),
 def has_key(chave):
 	return (chave in tabela_de_simbolos.keys())
 
-
-				
-
-
 # Classe que implementa o scanner.
 class Scanner:
 	estado = None
@@ -47,46 +43,84 @@ class Scanner:
 
 		if DEBUG: print("[LOG] Scanner chamado para a entrada \"{}\".".format(entrada))
 
+		# Reinicia a máquina de estados se o estado atual for definido como None.
 		if self.estado is None:
 			self.Reset()
-
+		
 		# Reconhece a string vazia como EOF.
 		if entrada == "":
-			return Token("EOF", "EOF", None)			
-		
-		# Indica se foi possível encontrar uma transição para o estado atual e entrada dada.
-		sem_caminho = True
+			if DEBUG: print("[LOG] EOF encontrado.")
+			self.estado = None
+			return Token("EOF", "EOF", None)
 
+		# Testa se existe uma transição do estado atual que aceite a entrada.
 		proximo_estado = self.estado.busca_transicao(entrada)
+
+		# Salva o token atual para possível uso em erros.
 		backup_token = self.token_atual
 
+		# Caso não hajam transições do estado atual da máquina que aceitem a entrada dada...
 		if proximo_estado is None:
-			self.Reset()
-			proximo_estado = self.estado.busca_transicao(entrada)
+			if DEBUG: print("[LOG] Sem transições partindo do estado atual com a entrada \"{}\".".format(self.estado))
 
-		if proximo_estado is not None:
-			self.estado = constantes.lista_de_estados[proximo_estado]
-			self.lexema += entrada
-			self.token_atual.classe = self.estado.token
-			self.token_atual.lexema = self.lexema
-
-		if proximo_estado is None:
+			# Caso o estado atual seja final, encerra o token atual e reinicia a execução à partir do estado inicial para o símbolo lido.
 			if self.estado.final:
+
 				if self.token_atual.classe == "id":
+					if DEBUG: print("[LOG] O token atual é um identificador.")
+					# Confere se o identificador já está na tabela de símbolos
 					if has_key(self.lexema):
+						if DEBUG: print("[LOG] Token já presente na tabela de símbolos.")
 						# Atualiza o token atual com uma cópia da tabela de símbolos
 						self.token_atual = tabela_de_simbolos[self.lexema]
 					else:
+						if DEBUG: print("[LOG] Adicionando novo símbolo na tabela (\"{}\").".format(self.lexema))
+						tabela_de_simbolos[self.lexema] = self.token_atual
+				
+				
+				# Reinicia o scanner
+				self.Reset()
+				# Tenta encontrar uma nova transição para a entrada à partir do estado inicial.
+				proximo_estado = self.estado.busca_transicao(entrada)
+
+		# Caso tenha sido possível efetuar uma transição da máquina de estados...
+		if proximo_estado is not None:
+			if DEBUG: print("[LOG] Efetuando transição para {}.".format(proximo_estado))
+			self.estado = constantes.lista_de_estados[proximo_estado]
+			# Adiciona a entrada ao lexema do token em análise
+			self.lexema += entrada
+			# Atualiza lexema e estado do token em análise
+			self.token_atual.classe = self.estado.token
+			self.token_atual.lexema = self.lexema
+
+		# Caso não tenha sido possível efetuar uma transição da máquina de estados...
+		else:
+			if DEBUG: print("[LOG] Sem transições disponíveis.")
+			# Confere se o estado atual é final
+			if self.estado.final:
+				if DEBUG: print("[LOG] O estado atual é final.")
+				# Confere se o token atual é um identificador
+				if self.token_atual.classe == "id":
+					if DEBUG: print("[LOG] O token atual é um identificador.")
+					# Confere se o identificador já está na tabela de símbolos
+					if has_key(self.lexema):
+						if DEBUG: print("[LOG] Token já presente na tabela de símbolos.")
+						# Atualiza o token atual com uma cópia da tabela de símbolos
+						self.token_atual = tabela_de_simbolos[self.lexema]
+					else:
+						if DEBUG: print("[LOG] Adicionando novo símbolo na tabela (\"{}\").".format(self.lexema))
 						tabela_de_simbolos[self.lexema] = self.token_atual
 					#força o reset na próxima chamada
 					self.estado = None
 			else:
 				self.token_atual = backup_token
+				self.token_atual.lexema += self.lexema
 				self.token_atual.classe = "ERRO"
 		
 		return self.token_atual
 	
 	def Reset(self):
+		if DEBUG: print("[LOG] Reiniciando Scanner.")
 		self.estado = constantes.lista_de_estados["S0_A"]
 		self.lexema = ""
 		self.token_atual = Token("SO_A", self.lexema, None)
