@@ -7,14 +7,14 @@ ESPACO_VAZIO = """
 STRING = NUMEROS + LETRAS + "!#$%&'()*+,-./\\:;<=>?@[]^/_`/{|}~" + ESPACO_VAZIO
 
 class Estado:
-	token = None
 	regras_de_transicao = None
+	classe = None
 	final = None
 
-	def __init__(self, regras_de_transicao, token, final):
+	def __init__(self, regras_de_transicao, classe, final):
 		self.regras_de_transicao = regras_de_transicao
 		self.final = final
-		self.token = token
+		self.classe = classe
 
 	def busca_transicao(self, entrada):
 		
@@ -28,6 +28,7 @@ class Estado:
 		return chave
 
 
+# lista_de_estados[x] = Estado(regras_de_transicao, classe do token que reconhece, final ou não)
 lista_de_estados = {}
 lista_de_estados["S0_A"] = Estado(
 								{
@@ -132,16 +133,12 @@ lista_de_estados["S10"] = Estado(
 								False)
 
 lista_de_estados["S11"] = Estado(
-								{
-
-								},
+								{},
 								None,
 								True)
 
 lista_de_estados["S12"] = Estado(
-								{
-
-								},
+								{},
 								"EOF",
 								True)
 
@@ -194,9 +191,3 @@ lista_de_estados["S19"] = Estado(
 								{},
 								"Vir",
 								True)
-
-lista_de_estados["S20"] = Estado(
-								{},
-								"ERRO",
-								True)
-
