@@ -133,11 +133,11 @@ def PRINCIPAL(arquivo):
 
 		scanner.Alimentar(fonte.read())
 
-		while token_retornado.classe != "EOF":
+		while token_retornado.classe is None or token_retornado.classe != "EOF":
 
 			token_retornado = scanner.SCANNER()
 
-			if "ERRO" in token_retornado.classe:
+			if token_retornado.classe is not  None and "ERRO" in token_retornado.classe:
 				ERROR(token_retornado.classe, scanner.linha, scanner.coluna - 1)
 			
 			else:

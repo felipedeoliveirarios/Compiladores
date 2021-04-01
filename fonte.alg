@@ -22,7 +22,7 @@ inicio
 	B<-B+3;
 	D<-B;
 	C<-5.0;
-	
+	{xablau}
 	escreva "\nB=\n";
 	escreva D;
 	escreva "\n";
