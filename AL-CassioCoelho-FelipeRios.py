@@ -1,6 +1,8 @@
 import constantes
 import argparse
 
+DEBUG = False
+
 # Classe responsável por armazenar os dados de um TOKEN
 class TOKEN:
 	classe, lexema, tipo = None, None, None
@@ -30,12 +32,16 @@ TABELA_DE_SIMBOLOS = {"inicio": TOKEN("inicio", "inicio", None),
 def HasKey(chave):
 	return (chave in TABELA_DE_SIMBOLOS.keys())
 
+#-------------------------------------------------------------------------------------------
+# Scanner
+#-------------------------------------------------------------------------------------------
+
 # Classe que implementa o scanner.
 class Scanner:
 	estado = None
 	buffer = None
 	indice = None
-	linha = 0
+	linha = 1
 	coluna = 0
 
 	def __init__(self):
@@ -48,6 +54,17 @@ class Scanner:
 	def Reset(self):
 		self.estado = constantes.lista_de_estados["S0_A"]
 		self.indice = 0
+	
+	def Consumir(self):
+		for char in self.buffer[:self.indice]:
+			if char == "\n":
+				self.linha += 1
+				self.coluna = 0
+				
+			else:
+				self.coluna += 1
+
+		self.buffer = self.buffer[self.indice:]
 
 	# FUNÇÃO SCANNER.
 	def SCANNER(self):
@@ -57,14 +74,6 @@ class Scanner:
 
 		while True:
 			proximo_estado = self.estado.busca_transicao(self.buffer[self.indice])
-
-			if self.buffer[self.indice] == "\n":
-				self.linha += 1
-				self.coluna = 0
-			
-			else:
-				self.coluna += 1
-
 
 			if proximo_estado is None:
 				break
@@ -83,13 +92,14 @@ class Scanner:
 				if not HasKey(lexema):
 					TABELA_DE_SIMBOLOS[lexema] = TOKEN(classe, lexema, None)
 				
-				self.buffer = self.buffer[self.indice:]
+
+				self.Consumir()
 				self.Reset()
 
 				return TABELA_DE_SIMBOLOS[lexema]
 
 			else:
-				self.buffer = self.buffer[self.indice:]
+				self.Consumir()
 				self.Reset()
 
 				return TOKEN(classe, lexema, None)
@@ -99,51 +109,166 @@ class Scanner:
 			lexema = self.buffer[0:self.indice]
 			
 			classe = "ERRO"
-
-			if self.estado == constantes.lista_de_estados["S0_A"]:
-				classe = "ERRO1"
-			
-			else:
-				classe = "ERRO2"
 			
 			self.indice += 1
-			self.buffer = self.buffer[self.indice:]
-
+			
+			self.Consumir()
 			self.Reset()
 
 			return TOKEN(classe, self.indice, None)
 
 # FUNÇÃO ERROR
-def ERROR(classe, linha, coluna):
-	mensagem = ""
+def ERROR(estado, linha, coluna):
+	mensagem = estado.mensagem_de_erro
+	chave_estado = ""
 
-	if classe == "ERRO1":
-		mensagem = "Caracter não reconhecido pela linguagem."
+	for key in constantes.lista_de_estados.keys():
+		if constantes.lista_de_estados[key] == estado:
+			chave_estado = key
+			break
+
+	identificador = "ERRO#" + chave_estado[1:]
+
+	print("{} - {}, linha {} e coluna {}".format(identificador, mensagem, linha, coluna))
+
+#-------------------------------------------------------------------------------------------
+# Parser
+#-------------------------------------------------------------------------------------------
+# Classe que implementa o parser
+class Parser:
+	pilhaEstados = []
+	pilhaTokens = []
+	lexico = None
+	entrada = None
+
+	def __init__(self, scanner):
+		self.pilhaEstados.append(0)
+		self.lexico = scanner
+		self.proximoToken()
+
+	def PARSER(self):
+
+		# Faz a checagem de erro do analisador léxico
+		if self.entrada.classe is not None and "ERRO" in self.entrada.classe:
+			ERROR(self.lexico.estado, self.lexico.linha, self.lexico.coluna)
+			return True
+
+		else:
+			# Garante que não é comentário, nem EOF, nem espaço vazio.
+			if self.entrada.classe is not None and self.entrada.classe != "\s":
+
+				# AQUI COMEÇA A BRUXARIA DO ANALISADOR SINTÁTICO
+
+				# Encontra o topo da pilha de estados
+				topoEstado = self.pilhaEstados[-1]
+
+				# Testa se existe uma ação válida
+				if self.entrada.classe in constantes.tabela_lr_action[topoEstado].keys():
+					# Obtém a ação para a self.entrada atual à partir do estado atual
+					action = constantes.tabela_lr_action[topoEstado][self.entrada.classe]
+
+					# Se a ação for um shift
+					if action[0] == 's':
+						posição = int(action[1:])
+						self.pilhaTokens.append(self.entrada.classe)
+						self.pilhaEstados.append(posição)
+
+						# Chama o analisador léxico e obtém um token
+						self.proximoToken()
+
+						return True
+
+					# Se a ação for um reduce
+					elif action[0] == 'r':
+
+						# Separa a posição da regra de produção do valor da tabela
+						posição = int(action[1:])
+
+						# Obtém os dois lados da regra de produção do reduce
+						ladoEsquerdo = constantes.regras_de_producao[posição][0]
+						ladoDireito = constantes.regras_de_producao[posição][1]
+
+						# Conta a quantidade de símbolos do lado direito
+						quantidade = ladoDireito.count(" ") + 1
+
+						# Desempilha a quantidade correta de tokens e estados
+						for i in range(quantidade):
+							self.pilhaEstados.pop()
+							self.pilhaTokens.pop()
+
+						# Atualiza a variável do topo da pilha
+						topoEstado = self.pilhaEstados[-1]
+
+						# Empilha o lado esquerdo da regra
+						self.pilhaTokens.append(ladoEsquerdo)
+
+						# Faz o goto para o estado no topo, usando o lado esquerdo como self.entrada
+						self.pilhaEstados.append(constantes.tabela_lr_goTo[topoEstado][ladoEsquerdo])
+
+						# Exibe a regra de produção
+						print(ladoEsquerdo + " -> " + ladoDireito)
+
+						# Mantém o while rodando
+						return True
+
+					# Se a acção foi um accept
+					elif action == 'acc':
+						# Para o while
+						return False
+
+				# ERRRRROOOOU
+				else:
+					# Obtém os terminais esperados para o estado atual.
+					esperado = constantes.tabela_lr_action[topoEstado].keys()
+					
+					print("ERRO SINTÁTICO - Token {} inesperado na linha {}, coluna {}. Se esperava {}.".format(self.entrada.lexema, self.lexico.linha, self.lexico.coluna, esperado))
+
+					# Exclui símbolos da pilha até encontrar um símbolo de recuperação					
+					while True:
+						if self.pilhaTokens[-1] in constantes.TOKENS_DE_SINCRONIZAÇÃO:
+							break;
+						
+						self.pilhaTokens.pop()
+						self.pilhaEstados.pop()
+					
+					# Exclui o símbolo de recuperação
+					self.pilhaTokens.pop()
+					self.pilhaEstados.pop()
+
+					# Segue o passeio
+					self.proximoToken()
+
+					return True
+			
+			# O TOKEN RETORNADO É IGNORADO
+			else:
+				self.proximoToken()
+				return True
 	
-	else:
-		mensagem = "Caracter não esperado."
-	
-	print("{} - {}, linha {} e coluna {}".format(classe, mensagem, linha, coluna))
+	def proximoToken(self):
+		self.entrada = self.lexico.SCANNER()
+
+#-------------------------------------------------------------------------------------------
+# PRINCIPAL
+#-------------------------------------------------------------------------------------------
 
 # FUNÇÃO PRINCIPAL
 def PRINCIPAL(arquivo):	
 	with open(arquivo) as fonte:
-		scanner = Scanner()	# Constrói um objeto do tipo Scanner
-		token_retornado = TOKEN("","",None)
 
+		# Constrói um objeto do tipo Scanner
+		scanner = Scanner()
+
+		# Insere a entrada no scanner
 		scanner.Alimentar(fonte.read())
 
-		while token_retornado.classe is None or token_retornado.classe != "EOF":
+		# Constrói um objeto do tipo Parser
+		parser = Parser(scanner)
 
-			token_retornado = scanner.SCANNER()
-
-			if token_retornado.classe is not  None and "ERRO" in token_retornado.classe:
-				ERROR(token_retornado.classe, scanner.linha, scanner.coluna - 1)
+		# Executa o parser em loop
+		while parser.PARSER():
+			pass
 			
-			else:
-				# Garante que não é comentário, nem EOF, nem espaço vazio.
-				if token_retornado.classe is not None and token_retornado.classe != "EOF" and token_retornado.classe != "\s":
-					print("Classe: \"{}\", Lexema: \"{}\", Tipo: \"{}\"".format(token_retornado.classe, token_retornado.lexema, token_retornado.tipo))
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
