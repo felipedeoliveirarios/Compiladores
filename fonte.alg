@@ -17,12 +17,15 @@ inicio
 		fimse
 	fimse
 
+	facaAte (B>2)
+		B<-B+1;
+	fimFaca
+
 	B<-B+1;
 	B<-B+2;
 	B<-B+3;
 	D<-B;
 	C<-5.0;
-	{xablau}
 	escreva "\nB=\n";
 	escreva D;
 	escreva "\n";
